@@ -114,7 +114,7 @@
             if (PMT_user > 0) {
                 if (additionalPeriod === 'monthly') {
                     if (interestPeriod === 'yearly') {
-                        PMT_effective = PMT_user * 12;
+                        PMT_effective = PMT_user;
                     }
                 }
 
@@ -122,6 +122,8 @@
                     futureValueOfPayments = PMT_effective * n_compounding * t;
                 } else if (additionalPeriod === 'yearly' && interestPeriod === 'monthly') {
                     futureValueOfPayments = futureValueAnnualContributions(PMT_effective, r_per_period - 1, t);
+                } else if (additionalPeriod === 'monthly' && interestPeriod === 'yearly') {
+                    futureValueOfPayments = calculateAnnualCompoundWithMonthlyInvestments(PMT_effective, r_per_period - 1, t);
                 } else {
                     futureValueOfPayments = PMT_effective * ((Math.pow(r_per_period, n_compounding * t) - 1) / (r_per_period - 1));
                 }
@@ -136,6 +138,16 @@
                 }
                 return fv;
             }
+
+            function calculateAnnualCompoundWithMonthlyInvestments(pmt, rate, years) {
+                let total = 0;
+                for (let i = 0; i < years; i++) {
+                    total += pmt * 12;
+                    total *= (1 + rate);
+                }
+                return total;
+            }
+
 
             let totalFutureValue = futureValueOfPrincipal + futureValueOfPayments;
             let totalInitialInvestment = P;
@@ -167,13 +179,13 @@
                     }
                 } else if ((additionalPeriod === 'monthly') && (interestPeriod === 'yearly')) {
                     if ((month + 1) % 12 === 0 && month > 0) {
-                        totalAdditional = totalAdditional * r_per_period + PMT_user;
+                        totalAdditional = (totalAdditional + PMT_user) * r_per_period;
                     } else {
-                    totalAdditional = totalAdditional * PMT_user;
+                    totalAdditional = totalAdditional + PMT_user;
                     }
                 } else if ((additionalPeriod === 'monthly') && (interestPeriod === 'monthly')) {
                     totalAdditional = totalAdditional * r_per_period + PMT_user;
-                } if ((additionalPeriod === 'yearly') && (interestPeriod === 'yearly')) {
+                } else if ((additionalPeriod === 'yearly') && (interestPeriod === 'yearly')) {
                     if ((month + 1) % 12 === 0 && month > 0) {
                         totalAdditional = totalAdditional * r_per_period + PMT_user;
                     } else {
