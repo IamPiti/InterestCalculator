@@ -28,6 +28,15 @@
             </div>
 
             <div class="flex flex-col">
+                <label for="etfSelect" class="text-gray-700 text-sm font-medium mb-1">ETF</label>
+                <select id="etfSelect" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="custom" selected>Custom rate</option>
+                    <option value="IWDA">IWDA</option>
+                    <option value="WWCE">WWCE</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col">
                 <label for="interestRate" class="text-gray-700 text-sm font-medium mb-1">Yearly Interest Rate (%)</label>
                 <input type="number" id="interestRate" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="10" min="0" step="0.1" />
             </div>
@@ -78,11 +87,25 @@
         const initialInvestmentInput = document.getElementById('initialInvestment');
         const additionalInvestmentInput = document.getElementById('additionalInvestment');
         const additionalPeriodSelect = document.getElementById('additionalPeriod');
+        const etfSelect = document.getElementById('etfSelect');
         const interestRateInput = document.getElementById('interestRate');
         const interestPeriodSelect = document.getElementById('interestPeriod');
         const investmentDurationInput = document.getElementById('investmentDuration');
         const finalAmountSpan = document.getElementById('finalAmount');
         const chartCanvas = document.getElementById('interestChart');
+
+        const ETF_RATE_MAP = {
+            custom: null,
+            IWDA: 8.7,
+            WWCE: 8.3
+        };
+
+        const applyETFRate = () => {
+            const selectedETF = etfSelect.value;
+            if (selectedETF !== 'custom' && ETF_RATE_MAP[selectedETF] !== undefined) {
+                interestRateInput.value = ETF_RATE_MAP[selectedETF];
+            }
+        };
 
         let interestChart;
         let lineChart;
@@ -147,7 +170,6 @@
                 }
                 return total;
             }
-
 
             let totalFutureValue = futureValueOfPrincipal + futureValueOfPayments;
             let totalInitialInvestment = P;
@@ -291,10 +313,21 @@
             }
         };
 
+        etfSelect.addEventListener('change', () => {
+            applyETFRate();
+            calculateInterest();
+        });
+
+        interestRateInput.addEventListener('input', () => {
+            if (etfSelect.value !== 'custom') {
+                etfSelect.value = 'custom';
+            }
+            calculateInterest();
+        });
+
         initialInvestmentInput.addEventListener('input', calculateInterest);
         additionalInvestmentInput.addEventListener('input', calculateInterest);
         additionalPeriodSelect.addEventListener('change', calculateInterest);
-        interestRateInput.addEventListener('input', calculateInterest);
         interestPeriodSelect.addEventListener('change', calculateInterest);
         investmentDurationInput.addEventListener('input', calculateInterest);
 

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent vs Buy Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-inter">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-6xl">
+        <div class="flex justify-center mb-6">
+            <div class="bg-gray-100 rounded-lg p-1 flex flex-wrap gap-1 justify-center">
+                <a href="index.html" class="px-4 py-2 rounded-md text-gray-600 hover:text-gray-800 font-medium">Investment Calculator</a>
+                <a href="loan.html" class="px-4 py-2 rounded-md text-gray-600 hover:text-gray-800 font-medium">Loan Calculator</a>
+                <a href="rent-vs-buy.html" class="px-4 py-2 rounded-md bg-blue-500 text-white font-medium">Rent vs Buy</a>
+            </div>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Rent vs Buy Comparison</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="flex flex-col">
+                <label for="propertyPrice" class="text-gray-700 text-sm font-medium mb-1">Property Price (€)</label>
+                <input type="number" id="propertyPrice" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="300000" min="0" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="downPayment" class="text-gray-700 text-sm font-medium mb-1">Down Payment (€)</label>
+                <input type="number" id="downPayment" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="60000" min="0" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="mortgageRate" class="text-gray-700 text-sm font-medium mb-1">Mortgage Rate (%)</label>
+                <input type="number" id="mortgageRate" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="4.5" min="0" step="0.1" />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="flex flex-col">
+                <label for="loanYears" class="text-gray-700 text-sm font-medium mb-1">Mortgage Duration (Years)</label>
+                <input type="number" id="loanYears" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="25" min="1" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="monthlyRent" class="text-gray-700 text-sm font-medium mb-1">Monthly Rent (€)</label>
+                <input type="number" id="monthlyRent" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="1400" min="0" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="monthlyPropertyCosts" class="text-gray-700 text-sm font-medium mb-1">Monthly Property Costs (€)</label>
+                <input type="number" id="monthlyPropertyCosts" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="350" min="0" />
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="flex flex-col">
+                <label for="rentIncrease" class="text-gray-700 text-sm font-medium mb-1">Rent Increase (%)</label>
+                <input type="number" id="rentIncrease" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="3" min="0" step="0.1" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="propertyAppreciation" class="text-gray-700 text-sm font-medium mb-1">Property Appreciation (%)</label>
+                <input type="number" id="propertyAppreciation" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="2.5" min="0" step="0.1" />
+            </div>
+
+            <div class="flex flex-col">
+                <label for="investmentYears" class="text-gray-700 text-sm font-medium mb-1">Comparison Period (Years)</label>
+                <input type="number" id="investmentYears" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="20" min="1" />
+            </div>
+        </div>
+
+        <div class="mb-8 p-5 bg-blue-50 rounded-xl border border-blue-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div>
+                    <div class="text-sm text-gray-500">Mortgage Payment / Month</div>
+                    <div id="mortgagePaymentValue" class="text-2xl font-bold text-blue-600">€0</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Monthly Difference</div>
+                    <div id="monthlyDifferenceValue" class="text-2xl font-bold text-blue-600">€0</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Winner</div>
+                    <div id="winnerValue" class="text-2xl font-bold text-green-600">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="rounded-xl border border-gray-200 p-5 bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">Buying Scenario</h2>
+                <div class="space-y-3 text-sm text-gray-700">
+                    <div class="flex justify-between"><span>Final Home Value</span><strong id="buyFinalValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Remaining Mortgage</span><strong id="remainingMortgageValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Home Equity</span><strong id="buyEquityValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Total Cost Paid</span><strong id="buyTotalCostValue">€0</strong></div>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-gray-200 p-5 bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">Renting + Investing</h2>
+                <div class="space-y-3 text-sm text-gray-700">
+                    <div class="flex justify-between"><span>Invested Amount</span><strong id="rentInvestedValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Portfolio Value</span><strong id="rentPortfolioValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Total Rent Paid</span><strong id="rentTotalPaidValue">€0</strong></div>
+                    <div class="flex justify-between"><span>Net Advantage</span><strong id="rentNetAdvantageValue">€0</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="h-80 w-full flex justify-center items-center mb-8">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const propertyPriceInput = document.getElementById('propertyPrice');
+        const downPaymentInput = document.getElementById('downPayment');
+        const mortgageRateInput = document.getElementById('mortgageRate');
+        const loanYearsInput = document.getElementById('loanYears');
+        const monthlyRentInput = document.getElementById('monthlyRent');
+        const monthlyPropertyCostsInput = document.getElementById('monthlyPropertyCosts');
+        const rentIncreaseInput = document.getElementById('rentIncrease');
+        const propertyAppreciationInput = document.getElementById('propertyAppreciation');
+        const investmentYearsInput = document.getElementById('investmentYears');
+
+        const mortgagePaymentValue = document.getElementById('mortgagePaymentValue');
+        const monthlyDifferenceValue = document.getElementById('monthlyDifferenceValue');
+        const winnerValue = document.getElementById('winnerValue');
+        const buyFinalValue = document.getElementById('buyFinalValue');
+        const remainingMortgageValue = document.getElementById('remainingMortgageValue');
+        const buyEquityValue = document.getElementById('buyEquityValue');
+        const buyTotalCostValue = document.getElementById('buyTotalCostValue');
+        const rentInvestedValue = document.getElementById('rentInvestedValue');
+        const rentPortfolioValue = document.getElementById('rentPortfolioValue');
+        const rentTotalPaidValue = document.getElementById('rentTotalPaidValue');
+        const rentNetAdvantageValue = document.getElementById('rentNetAdvantageValue');
+
+        const formatNumber = (num) => Number(num).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+        const calculateMortgagePayment = (principal, annualRate, years) => {
+            const monthlyRate = annualRate / 100 / 12;
+            const totalPayments = years * 12;
+
+            if (principal <= 0 || totalPayments <= 0) return 0;
+            if (monthlyRate === 0) return principal / totalPayments;
+
+            return principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+        };
+
+        const calculateFutureValueOfMonthlyInvestments = (monthlyContribution, annualRate, months) => {
+            if (monthlyContribution <= 0 || months <= 0) return 0;
+            const monthlyRate = annualRate / 100 / 12;
+            if (monthlyRate === 0) return monthlyContribution * months;
+            return monthlyContribution * (((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate));
+        };
+
+        const calculateRentScenarioPortfolio = (initialInvestment, monthlyContribution, annualRate, months) => {
+            let balance = initialInvestment;
+            const monthlyRate = annualRate / 100 / 12;
+
+            for (let month = 1; month <= months; month++) {
+                if (monthlyRate === 0) {
+                    balance += monthlyContribution;
+                } else {
+                    balance = balance * (1 + monthlyRate) + monthlyContribution;
+                }
+            }
+
+            return balance;
+        };
+
+        const calculateComparison = () => {
+            const propertyPrice = parseFloat(propertyPriceInput.value) || 0;
+            const downPayment = parseFloat(downPaymentInput.value) || 0;
+            const mortgageRate = parseFloat(mortgageRateInput.value) || 0;
+            const loanYears = parseFloat(loanYearsInput.value) || 0;
+            const monthlyRent = parseFloat(monthlyRentInput.value) || 0;
+            const monthlyPropertyCosts = parseFloat(monthlyPropertyCostsInput.value) || 0;
+            const rentIncrease = parseFloat(rentIncreaseInput.value) || 0;
+            const propertyAppreciation = parseFloat(propertyAppreciationInput.value) || 0;
+            const comparisonYears = parseFloat(investmentYearsInput.value) || 0;
+
+            const principal = Math.max(propertyPrice - downPayment, 0);
+            const mortgagePayment = calculateMortgagePayment(principal, mortgageRate, loanYears);
+            const monthlyBuyCost = mortgagePayment + monthlyPropertyCosts;
+            const monthlyDifference = monthlyBuyCost - monthlyRent;
+            const investedDifference = Math.max(monthlyDifference, 0);
+            const initialRentInvestment = downPayment;
+            const totalMonths = comparisonYears * 12;
+
+            mortgagePaymentValue.textContent = `€${formatNumber(mortgagePayment)}`;
+            monthlyDifferenceValue.textContent = `€${formatNumber(monthlyDifference)}`;
+
+            let totalRentPaid = 0;
+            let currentRent = monthlyRent;
+            let totalBuyCost = 0;
+            let remainingBalance = principal;
+            const monthlyRate = mortgageRate / 100 / 12;
+
+            for (let month = 1; month <= totalMonths; month++) {
+                if (month > 1 && month % 12 === 1) {
+                    currentRent *= 1 + (rentIncrease / 100);
+                }
+
+                totalRentPaid += currentRent;
+
+                if (loanYears > 0) {
+                    const interest = remainingBalance * monthlyRate;
+                    const principalPaid = mortgagePayment - interest;
+                    remainingBalance = Math.max(remainingBalance - principalPaid, 0);
+                }
+
+                totalBuyCost += monthlyBuyCost;
+            }
+
+            const propertyValue = propertyPrice * Math.pow(1 + propertyAppreciation / 100, comparisonYears);
+            const homeEquity = Math.max(propertyValue - remainingBalance, 0);
+            const portfolioValue = calculateRentScenarioPortfolio(initialRentInvestment, investedDifference, 8.7, totalMonths);
+            const totalInvestedRent = initialRentInvestment + (investedDifference * totalMonths);
+
+            const buyNet = homeEquity;
+            const rentNet = portfolioValue;
+            const winner = buyNet > rentNet ? 'Buy' : 'Rent + Invest';
+
+            winnerValue.textContent = winner;
+            winnerValue.className = winner === 'Buy' ? 'text-2xl font-bold text-green-600' : 'text-2xl font-bold text-green-600';
+
+            buyFinalValue.textContent = `€${formatNumber(propertyValue)}`;
+            remainingMortgageValue.textContent = `€${formatNumber(remainingBalance)}`;
+            buyEquityValue.textContent = `€${formatNumber(homeEquity)}`;
+            buyTotalCostValue.textContent = `€${formatNumber(totalBuyCost - homeEquity)}`;
+
+            rentInvestedValue.textContent = `€${formatNumber(totalInvestedRent)}`;
+            rentPortfolioValue.textContent = `€${formatNumber(portfolioValue)}`;
+            rentTotalPaidValue.textContent = `€${formatNumber(totalRentPaid)}`;
+            rentNetAdvantageValue.textContent = `${(buyNet > rentNet ? '+' : '-')}${formatNumber(Math.abs(buyNet - rentNet))}`;
+
+            const chartCtx = document.getElementById('comparisonChart').getContext('2d');
+            if (window.comparisonChartInstance) {
+                window.comparisonChartInstance.data.labels = Array.from({ length: totalMonths + 1 }, (_, index) => `M${index}`);
+                window.comparisonChartInstance.data.datasets[0].data = generateHomeValueSeries(propertyPrice, propertyAppreciation, totalMonths, principal, mortgageRate, loanYears, mortgagePayment);
+                window.comparisonChartInstance.data.datasets[1].data = generateInvestmentSeries(initialRentInvestment, investedDifference, totalMonths);
+                window.comparisonChartInstance.update();
+            } else {
+                const labels = Array.from({ length: totalMonths + 1 }, (_, index) => `M${index}`);
+                const homeSeries = generateHomeValueSeries(propertyPrice, propertyAppreciation, totalMonths, principal, mortgageRate, loanYears, mortgagePayment);
+                const investmentSeries = generateInvestmentSeries(initialRentInvestment, investedDifference, totalMonths);
+
+                window.comparisonChartInstance = new Chart(chartCtx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'Home Equity', data: homeSeries, borderColor: '#4CAF50', fill: false, tension: 0.1 },
+                            { label: 'IWDA Investment Value', data: investmentSeries, borderColor: '#2196F3', fill: false, tension: 0.1 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: €${formatNumber(context.parsed.y)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: false, title: { display: true, text: '€ Value' } },
+                            x: { title: { display: true, text: 'Months' } }
+                        }
+                    }
+                });
+            }
+        };
+
+        const generateHomeValueSeries = (propertyPrice, propertyAppreciation, totalMonths, principal, mortgageRate, loanYears, mortgagePayment) => {
+            const series = [0];
+            let remainingBalance = principal;
+            const monthlyRate = mortgageRate / 100 / 12;
+            const monthlyAppreciation = propertyAppreciation / 100 / 12;
+            let currentValue = propertyPrice;
+
+            for (let month = 1; month <= totalMonths; month++) {
+                if (loanYears > 0) {
+                    const interest = remainingBalance * monthlyRate;
+                    const principalPaid = mortgagePayment - interest;
+                    remainingBalance = Math.max(remainingBalance - principalPaid, 0);
+                }
+
+                currentValue *= (1 + monthlyAppreciation);
+                series.push(Math.max(currentValue - remainingBalance, 0));
+            }
+
+            return series;
+        };
+
+        const generateInvestmentSeries = (initialInvestment, monthlyContribution, totalMonths) => {
+            const series = [initialInvestment];
+            let balance = initialInvestment;
+            const monthlyRate = 8.7 / 100 / 12;
+
+            for (let month = 1; month <= totalMonths; month++) {
+                balance = balance * (1 + monthlyRate) + monthlyContribution;
+                series.push(balance);
+            }
+
+            return series;
+        };
+
+        [
+            propertyPriceInput,
+            downPaymentInput,
+            mortgageRateInput,
+            loanYearsInput,
+            monthlyRentInput,
+            monthlyPropertyCostsInput,
+            rentIncreaseInput,
+            propertyAppreciationInput,
+            investmentYearsInput
+        ].forEach(input => input.addEventListener('input', calculateComparison));
+
+        window.onload = calculateComparison;
+    </script>
+</body>
+</html>
